@@ -7,6 +7,8 @@ import sequelize from "./sequelize.js";
 import History from "./models/history.js";
 import Comment from "./models/comment.js";
 import router from "./routes/api.js";
+import commentRouter from "./routes/comment.js";
+import historyRouter from "./routes/history.js";
 
 const app = express();
 
@@ -14,6 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use("/api", router);
+app.use("/comments", commentRouter);
+
+app.use("/histories", historyRouter);
 
 User.hasMany(Bounty, {foreignKey: "reporterId"});
 Bounty.belongsTo(User, {foreignKey: "reporterId"});
@@ -34,19 +39,6 @@ Bounty.hasMany(History, {foreignKey: "bountyId"});
 History.belongsTo(Bounty, {foreignKey: "bountyId"});
 
 const port = process.env.PORT || 3000;
-
-/*const createDatabase = async ()=>{
-    try{
-        await sequelize.sync({alter: true});
-    }catch(err){
-        console.error("Eroare la crearea tabelelor ");
-    }
-}
-
-app.listen(port,()=>{
-    console.log(`Server started on port ${port}`);
-    createDatabase();
-});*/
 
 const startServer = async () => {
     try {
