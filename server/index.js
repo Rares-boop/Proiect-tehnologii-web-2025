@@ -4,6 +4,8 @@ import Bounty from "./models/bounty.js";
 import User from "./models/user.js";
 import Program from "./models/program.js";
 import sequelize from "./sequelize.js";
+import History from "./models/history.js";
+import Comment from "./models/comment.js";
 
 const app = express();
 
@@ -15,6 +17,18 @@ Bounty.belongsTo(User, {foreignKey: "reporterId"});
 
 Program.hasMany(Bounty, {foreignKey: "programId"});
 Bounty.belongsTo(Program, {foreignKey: "programId"});
+
+User.hasMany(Comment, {foreignKey: "userId"});
+Comment.belongsTo(User, {foreignKey: "userId"});
+
+Bounty.hasMany(Comment, {foreignKey: "bountyId"});
+Comment.belongsTo(Bounty, {foreignKey: "bountyId"});
+
+User.hasMany(History, {foreignKey: "userId"});
+History.belongsTo(User, {foreignKey: "userId"});
+
+Bounty.hasMany(History, {foreignKey: "bountyId"});
+History.belongsTo(Bounty, {foreignKey: "bountyId"});
 
 const port = process.env.PORT || 3000;
 
