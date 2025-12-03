@@ -6,11 +6,14 @@ import Program from "./models/program.js";
 import sequelize from "./sequelize.js";
 import History from "./models/history.js";
 import Comment from "./models/comment.js";
+import router from "./routes/api.js";
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use("/api", router);
 
 User.hasMany(Bounty, {foreignKey: "reporterId"});
 Bounty.belongsTo(User, {foreignKey: "reporterId"});
@@ -58,5 +61,10 @@ const startServer = async () => {
 }
 
 startServer();
+
+app.use((err,req,res,next)=>{
+    console.error("[ERROR] "+err);
+    return res.status(500).json({message: "500 Server error "});
+});
 
 
