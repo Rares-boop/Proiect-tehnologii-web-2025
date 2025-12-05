@@ -2,6 +2,8 @@ import express from "express";
 import User from "../models/user.js";
 import Program from "../models/program.js";
 import Bounty from "../models/bounty.js";
+import sequelize from "../sequelize.js";
+import { Op, QueryError } from "sequelize";
 
 const router = express.Router();
 
@@ -134,27 +136,179 @@ router.put("/programs/:programId",async (req,res,next)=>{
     }
 });
 
-router.post("/bounties",async (req,res,next)=>{
+router.get("/bounties",async (req,res,next)=>{
+    try{
+        const bounties = await Bounty.findAll();
+
+        return res.status(200).json(bounties);
+
+    }catch(err){
+        next(err);
+    }
+}).post("/bounties",async (req,res,next)=>{
     try{
         const body = req.body;
 
-        if(!body || !body.title || !body.description || !body.rewardAmount || !body.status){
-            return res.status(400).json({message: "Missing title, programId or reporterId"});
+        if(!body){
+            return res.status(400).json({message: "Body is missing "});
         }
 
-        if(body.title.length < 3 || body.title.length > 20){
-            return res.status(400).json({message: "Title must be between 3 and 20 chars"});
+        if (body.title && (body.title.length < 3 || body.title.length > 20)) {
+            return res.status(400).json({ message: "Title length error" });
         }
 
-        if(body.rewardAmount && body.rewardAmount < 0){
-            return res.status(400).json({message: "Reward amount must be positive "});
+        if (body.rewardAmount !== undefined && body.rewardAmount < 0) {
+            return res.status(400).json({ message: "Reward amount negative" });
         }
 
-        const newBounty = await Bounty.create(body);
+        if(!body.reporterId){
+            return res.status(400).json({message: "Bounty must have user id "});
+        }
 
+        if(!body.programId){
+            return res.status(400).json({message: "Bounty must have program id "});
+        }
+
+        const newBounty = await Bounty.create(req.body);
+        
         return res.status(201).json(newBounty);
 
     }catch(err){
+        next(err);
+    }
+});
+
+router.get("/bounties/search",async (req,res,next)=>{
+    try{
+        const query = req.query;
+        if(Object.keys(query).length === 0){
+            const bounties = await Bounty.findAll({
+                where:{
+                    status: "open"
+                },
+                order: [["rewardAmount","DESC"]],
+                limit: 10,
+            });
+
+            return res.status(200).json(bounties);
+        }
+
+        const whereClause = {};
+
+        if(query.title){
+            whereClause.title = {[Op.like]: `%${query.title}%`};
+        }
+
+        if(query.minReward){
+            whereClause.rewardAmount = {[Op.gte]: query.minReward};
+        }
+
+        if(query.status){
+            whereClause.status = {[Op.eq]: query.status};
+        }
+
+        if(query.reporterId){
+            whereClause.reporterId = query.reporterId;
+        }
+
+        if(query.programId){
+            whereClause.programId = query.programId;
+        }
+
+        const bounties = await Bounty.findAll({
+            where: whereClause,
+            order: [["createdAt","DESC"]]
+        });
+
+        return res.status(200).json(bounties);
+
+    }catch(err){
+        next(err);
+    }
+});
+
+router.get("/bounties/:bountyId", async (req, res, next) => {
+    try {
+        const bounty = await Bounty.findByPk(req.params.bountyId);
+        if (bounty) {
+            return res.status(200).json(bounty);
+        } else {
+            return res.status(404).json({ message: "Bounty not found" });
+        }
+    } catch (err) {
+        next(err);
+    }
+})
+.put("/bounties/:bountyId", async (req, res, next) => {
+    try {
+        const body = req.body;
+        if (!body) {
+            return res.status(400).json({ message: "Body is missing" });
+        }
+
+        if (body.title && (body.title.length < 3 || body.title.length > 20)) {
+            return res.status(400).json({ message: "Title length error" });
+        }
+
+        if (body.rewardAmount !== undefined && body.rewardAmount < 0) {
+            return res.status(400).json({ message: "Reward amount negative" });
+        }
+
+        const bounty = await Bounty.findByPk(req.params.bountyId);
+        if (!bounty) {
+            return res.status(404).json({ message: "Bounty not found" });
+        }
+
+        await bounty.update(req.body);
+
+        return res.status(200).json(bounty);
+    } catch (err) {
+        next(err);
+    }
+})
+.delete("/bounties/:bountyId", async (req, res, next) => {
+    try {
+        const bounty = await Bounty.findByPk(req.params.bountyId);
+        
+        if (!bounty) {
+            return res.status(404).json({ message: "Bounty not found" });
+        }
+
+        await bounty.destroy();
+
+        return res.status(200).json({ message: "Bounty deleted" });
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get("/stats/leaderboard", async (req, res, next) => {
+    try {
+        const limitValue = req.query.numberOfPeople ? parseInt(req.query.numberOfPeople) : 10;
+
+        const leaderboard = await User.findAll({
+            attributes: [
+                "username",
+                [sequelize.fn("SUM", sequelize.col("bounties.rewardAmount")), "totalEarnings"],
+                [sequelize.fn("COUNT", sequelize.col("bounties.id")), "bugsFixed"]
+            ],
+            include: [{
+                model: Bounty,
+                attributes: [],
+                where: {
+                    status: "paid"
+                }
+            }],
+            group: ['user.id'], 
+            order: [[sequelize.literal('"totalEarnings"'), 'DESC']],
+            limit: limitValue,
+            subQuery: false
+        });
+
+        return res.status(200).json(leaderboard);
+
+    } catch (err) {
         next(err);
     }
 });

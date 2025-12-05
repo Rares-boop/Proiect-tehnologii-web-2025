@@ -16,26 +16,44 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use("/api", router);
-app.use("/comments", commentRouter);
+app.use("/api/comments", commentRouter);
 
-app.use("/histories", historyRouter);
+app.use("/api/histories", historyRouter);
 
-User.hasMany(Bounty, {foreignKey: "reporterId"});
+User.hasMany(Bounty, {
+    foreignKey: "reporterId",
+    onDelete: 'CASCADE'
+});
 Bounty.belongsTo(User, {foreignKey: "reporterId"});
 
-Program.hasMany(Bounty, {foreignKey: "programId"});
+Program.hasMany(Bounty, {
+    foreignKey: "programId",
+    onDelete: 'CASCADE' 
+});
 Bounty.belongsTo(Program, {foreignKey: "programId"});
 
-User.hasMany(Comment, {foreignKey: "userId"});
+User.hasMany(Comment, {
+    foreignKey: "userId",
+    onDelete: 'CASCADE' 
+});
 Comment.belongsTo(User, {foreignKey: "userId"});
 
-Bounty.hasMany(Comment, {foreignKey: "bountyId"});
+Bounty.hasMany(Comment, {
+    foreignKey: "bountyId",
+    onDelete: 'CASCADE'
+});
 Comment.belongsTo(Bounty, {foreignKey: "bountyId"});
 
-User.hasMany(History, {foreignKey: "userId"});
+User.hasMany(History, {
+    foreignKey: "userId",
+    onDelete: 'CASCADE' 
+});
 History.belongsTo(User, {foreignKey: "userId"});
 
-Bounty.hasMany(History, {foreignKey: "bountyId"});
+Bounty.hasMany(History, {
+    foreignKey: "bountyId",
+    onDelete: 'CASCADE'
+});
 History.belongsTo(Bounty, {foreignKey: "bountyId"});
 
 const port = process.env.PORT || 3000;

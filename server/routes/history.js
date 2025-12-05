@@ -41,4 +41,41 @@ historyRouter.post("/bounty/:bountyId/user/:userId", async (req, res, next) => {
     }
 });
 
+historyRouter.put("/:historyId",async (req,res,next)=>{
+    try{
+        const history = await History.findByPk(req.params.historyId);
+        const body = req.body;
+
+        if(!history){
+            return res.status(404).json({message: "History is missing "});
+        }
+
+        if(!body || !body.changeDescription){
+            return res.status(400).json({message: "Descrition is missing "});
+        }
+
+        await history.update({changeDescription: req.body.changeDescription});
+
+        return res.status(200).json(history);
+
+    }catch(err){
+        next(err);
+    }
+}).delete("/:historyId",async (req,res,next)=>{
+    try{
+        const history = await History.findByPk(req.params.historyId);
+
+        if(!history){
+            return res.status(404).json({message: "History is missing "});
+        }
+
+        await history.destroy();
+
+        return res.status(200).json({message: "History deleted successfully "});
+
+    }catch(err){
+        next(err);
+    }
+});
+
 export default historyRouter;

@@ -38,4 +38,45 @@ commentRouter.post("/bounty/:bountyId/user/:userId", async (req, res, next) => {
     }
 });
 
+commentRouter.put("/:commentId",async (req,res,next)=>{
+    try{
+        const comment = await Comment.findByPk(req.params.commentId);
+        const body = req.body;
+
+        if(!comment){
+            return res.status(404).json({message: "Comment not found "});
+        }
+
+        if(!body){
+            return res.status(400).json({message: "Body is missing "});
+        }
+
+        if(!body.text){
+            return res.status(400).json({message: "Comment must have a description "});
+        }
+
+        await comment.update(req.body);
+
+        return res.status(200).json(comment);
+
+    }catch(err){
+        next(err);
+    }
+}).delete("/:commentId",async (req,res,next)=>{
+    try{
+        const comment = await Comment.findByPk(req.params.commentId);
+
+        if(!comment){
+            return res.status(404).json({message: "Comment is missing "});
+        }
+
+        await comment.destroy();
+
+        return res.status(200).json({message: "Comment deleted successfully "});
+
+    }catch(err){
+        next(err);
+    }
+});
+
 export default commentRouter;
