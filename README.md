@@ -1,7 +1,7 @@
-# Big Bounty
+# Bug Bounty
 
 ## Obiectiv general
-Realizarea unei aplicații de tip Big Bounty cu front-end SPA realizat în **React.js** și back-end **Node.js + Express**, care oferă o interfață REST pentru gestionarea bounty-urilor. Datele sunt stocate într-o bază relațională.
+Realizarea unei aplicații de tip Bug Bounty cu front-end SPA realizat în **React.js** și back-end **Node.js + Express**, care oferă o interfață REST pentru gestionarea bounty-urilor. Datele sunt stocate într-o bază relațională.
 
 ---
 

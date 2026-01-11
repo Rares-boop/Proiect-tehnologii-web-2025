@@ -28,20 +28,47 @@ function Home() {
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
 
+  const handleDeleteProject = async (projectId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this project?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/projects/${projectId}`);
+      setProjects(projects.filter(p => p.id !== projectId));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete project');
+    }
+  };
+
+  const handleDeleteBug = async (bugId) => {
+    if (!window.confirm('Are you sure you want to delete this bug?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/bugs/${bugId}`);
+      setBugs(bugs.filter(b => b.id !== bugId));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete bug');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          {user ? `Welcome back, ${user.email}!` : 'Welcome to Big Bounty Application'}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
+          {user ? `Welcome back, ${user.email}!` : 'Welcome to Bug Bounty Application'}
         </h2>
         {user && (
-          <div className="mt-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Projects</h3>
+          <div className="mt-6 sm:mt-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Projects</h3>
             {projects.length === 0 ? (
               <p className="text-gray-600">No projects yet.</p>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {projects.map(project => {
                   const isCreator = user?.role === 'MP' && Number(project.created_by) === Number(user.id);
                   const isMember = user?.role === 'MP' && Number(project.is_member) === 1;
@@ -55,27 +82,35 @@ function Home() {
                           navigate(`/view-bugs?project=${project.id}`);
                         }
                       }}
-                      className={`bg-white p-6 rounded-lg shadow-md ${
+                      className={`bg-white p-4 sm:p-6 rounded-lg shadow-md relative ${
                         canViewBugs 
                           ? 'cursor-pointer hover:shadow-lg transition-shadow' 
                           : ''
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-xl font-bold text-gray-900">{project.nume}</h4>
+                      {isCreator && (
+                        <button
+                          onClick={(e) => handleDeleteProject(project.id, e)}
+                          className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded hover:bg-red-700 flex items-center justify-center text-sm font-bold"
+                        >
+                          ×
+                        </button>
+                      )}
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <h4 className="text-lg sm:text-xl font-bold text-gray-900">{project.nume}</h4>
                         {project.is_tester === 1 && (
                           <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">Tester</span>
                         )}
                       </div>
                       {project.descriere && (
-                        <p className="text-gray-600 mb-2">{project.descriere}</p>
+                        <p className="text-sm sm:text-base text-gray-600 mb-2 break-words">{project.descriere}</p>
                       )}
                       {project.repository && (
-                        <p className="text-sm text-blue-600 mb-2">{project.repository}</p>
+                        <p className="text-xs sm:text-sm text-blue-600 mb-2 break-all">{project.repository}</p>
                       )}
-                      <p className="text-sm text-gray-500">Created by: {project.creator_email}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Created by: {project.creator_email}</p>
                       {canViewBugs && (
-                        <p className="text-sm text-purple-600 mt-2 font-medium">Click to view bugs →</p>
+                        <p className="text-xs sm:text-sm text-purple-600 mt-2 font-medium">Click to view bugs →</p>
                       )}
                     </div>
                   );
@@ -85,18 +120,24 @@ function Home() {
           </div>
         )}
         {user && user.role === 'TST' && (
-          <div className="mt-12">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">My Reported Bugs</h3>
+          <div className="mt-8 sm:mt-12">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">My Reported Bugs</h3>
             {bugs.length === 0 ? (
               <p className="text-gray-600">No bugs reported yet.</p>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {bugs.map(bug => (
-                  <div key={bug.id} className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="text-xl font-bold text-gray-900">{bug.project_name}</h4>
+                  <div key={bug.id} className="bg-white p-4 sm:p-6 rounded-lg shadow-md relative">
+                    <button
+                      onClick={() => handleDeleteBug(bug.id)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded hover:bg-red-700 flex items-center justify-center text-sm font-bold"
+                    >
+                      ×
+                    </button>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h4 className="text-lg sm:text-xl font-bold text-gray-900">{bug.project_name}</h4>
                     </div>
-                    <p className="text-gray-600 mb-3">{bug.description}</p>
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 break-words">{bug.description}</p>
                     <div className="flex gap-2 mb-2 flex-wrap">
                       <span className={`text-xs font-semibold px-2 py-1 rounded ${
                         bug.severity === 'Critical' ? 'bg-red-100 text-red-800' :
@@ -128,12 +169,12 @@ function Home() {
                         href={bug.commit_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 mb-2 block"
+                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 mb-2 block break-all"
                       >
                         Commit Link
                       </a>
                     )}
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {new Date(bug.created_at).toLocaleString()}
                     </p>
                   </div>

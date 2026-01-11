@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "authors": [
+    "Gavrila Cristinel-Petrut",
+    "Voicu Bogdan-Alexandru",
+    "Vladu Rares-Mihai"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

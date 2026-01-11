@@ -288,7 +288,7 @@ router.get('/:id/bugs', authenticateToken, async (req, res) => {
         const bugs = await db.all(`
             SELECT b.id, b.description, b.severity, b.priority, b.commit_link, b.status, b.created_at,
                    u.email as tester_email, p.name as project_name, b.id_project as project_id,
-                   b.assigned_to, mp.email as assigned_to_email
+                   b.assigned_to, mp.email as assigned_to_email, b.id_tester
             FROM bugs b
             JOIN projects p ON b.id_project = p.id
             JOIN users u ON b.id_tester = u.id
@@ -300,6 +300,32 @@ router.get('/:id/bugs', authenticateToken, async (req, res) => {
         res.json(bugs);
     } catch (error) {
         console.error('Get project bugs error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.delete('/:id', authenticateToken, requireMP, async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'Valid project ID is required' });
+        }
+
+        const db = getDatabase();
+        const project = await db.get('SELECT created_by FROM projects WHERE id = ?', [projectId]);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        if (Number(project.created_by) !== Number(req.user.id)) {
+            return res.status(403).json({ message: 'You can only delete your own projects' });
+        }
+
+        await db.run('DELETE FROM projects WHERE id = ?', [projectId]);
+
+        res.json({ message: 'Project deleted successfully' });
+    } catch (error) {
+        console.error('Delete project error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });

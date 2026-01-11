@@ -200,4 +200,51 @@ router.put('/:id/status', authenticateToken, requireMP, async (req, res) => {
     }
 });
 
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const bugId = parseInt(req.params.id);
+        if (isNaN(bugId)) {
+            return res.status(400).json({ message: 'Valid bug ID is required' });
+        }
+
+        const db = getDatabase();
+        const bug = await db.get(`
+            SELECT b.id, b.id_tester, b.id_project, p.created_by
+            FROM bugs b
+            JOIN projects p ON b.id_project = p.id
+            WHERE b.id = ?
+        `, [bugId]);
+
+        if (!bug) {
+            return res.status(404).json({ message: 'Bug not found' });
+        }
+
+        const isCreator = Number(bug.id_tester) === Number(req.user.id);
+        
+        let isProjectMP = false;
+        if (req.user.role === 'MP') {
+            if (Number(bug.created_by) === Number(req.user.id)) {
+                isProjectMP = true;
+            } else {
+                const member = await db.get(
+                    'SELECT id FROM project_members WHERE project_id = ? AND user_id = ?',
+                    [bug.id_project, req.user.id]
+                );
+                isProjectMP = !!member;
+            }
+        }
+
+        if (!isCreator && !isProjectMP) {
+            return res.status(403).json({ message: 'You can only delete bugs you created or bugs from your projects' });
+        }
+
+        await db.run('DELETE FROM bugs WHERE id = ?', [bugId]);
+
+        res.json({ message: 'Bug deleted successfully' });
+    } catch (error) {
+        console.error('Delete bug error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 export default router;

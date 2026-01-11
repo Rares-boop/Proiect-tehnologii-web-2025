@@ -85,6 +85,35 @@ function ViewBugs() {
     }
   };
 
+  const deleteBug = async (bugId) => {
+    if (!window.confirm('Are you sure you want to delete this bug?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/bugs/${bugId}`);
+      const allBugs = await fetchAllBugs();
+      setBugs(allBugs);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete bug');
+    }
+  };
+
+  const canDeleteBug = (bug) => {
+    if (!user) return false;
+    const isCreator = Number(bug.id_tester) === Number(user.id);
+    if (isCreator) return true;
+    if (user.role === 'MP') {
+      const project = projects.find(p => Number(p.id) === Number(bug.project_id));
+      if (project) {
+        const isProjectCreator = Number(project.created_by) === Number(user.id);
+        const isMember = Number(project.is_member) === 1;
+        return isProjectCreator || isMember;
+      }
+    }
+    return false;
+  };
+
   const filteredBugs = bugs.filter(bug => {
     if (filters.severity && bug.severity !== filters.severity) return false;
     if (filters.priority && bug.priority !== filters.priority) return false;
@@ -110,16 +139,16 @@ function ViewBugs() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">View Bugs</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">View Bugs</h2>
           {filters.project && (() => {
             const selectedProject = projects.find(p => Number(p.id) === Number(filters.project));
             if (selectedProject && Number(selectedProject.created_by) === Number(user?.id)) {
               return (
                 <a
                   href={`/manage-team?project=${filters.project}`}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                  className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-purple-600 text-white rounded hover:bg-purple-700"
                 >
                   Manage Team
                 </a>
@@ -129,7 +158,7 @@ function ViewBugs() {
           })()}
         </div>
         
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -138,7 +167,7 @@ function ViewBugs() {
               <select
                 value={filters.severity}
                 onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="">All Severities</option>
                 <option value="Low">Low</option>
@@ -154,7 +183,7 @@ function ViewBugs() {
               <select
                 value={filters.priority}
                 onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="">All Priorities</option>
                 <option value="Low">Low</option>
@@ -170,7 +199,7 @@ function ViewBugs() {
               <select
                 value={filters.project}
                 onChange={(e) => setFilters({ ...filters, project: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="">All Projects</option>
                 {projects.map(proj => (
@@ -181,7 +210,7 @@ function ViewBugs() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+        <div className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -287,29 +316,139 @@ function ViewBugs() {
                       {bug.assigned_to_email || '-'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm">
-                      {!bug.assigned_to ? (
-                        <button
-                          onClick={() => assignBug(bug.id)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          Assign
-                        </button>
-                      ) : Number(bug.assigned_to) === Number(user?.id) ? (
-                        <button
-                          onClick={() => setModalBug(bug)}
-                          className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 whitespace-nowrap"
-                        >
-                          Update
-                        </button>
-                      ) : (
-                        <span className="text-gray-600">Assigned</span>
-                      )}
+                      <div className="flex gap-2 items-center">
+                        {!bug.assigned_to ? (
+                          <button
+                            onClick={() => assignBug(bug.id)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs sm:text-sm"
+                          >
+                            Assign
+                          </button>
+                        ) : Number(bug.assigned_to) === Number(user?.id) ? (
+                          <button
+                            onClick={() => setModalBug(bug)}
+                            className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 whitespace-nowrap"
+                          >
+                            Update
+                          </button>
+                        ) : (
+                          <span className="text-gray-600">Assigned</span>
+                        )}
+                        {canDeleteBug(bug) && (
+                          <button
+                            onClick={() => deleteBug(bug.id)}
+                            className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="md:hidden space-y-4">
+          {filteredBugs.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+              No bugs found
+            </div>
+          ) : (
+            filteredBugs.map(bug => (
+              <div key={bug.id} className="bg-white rounded-lg shadow-md p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-bold text-gray-900">{bug.project_name}</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                      bug.severity === 'Critical' ? 'bg-red-100 text-red-800' :
+                      bug.severity === 'High' ? 'bg-orange-100 text-orange-800' :
+                      bug.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {bug.severity}
+                    </span>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                      bug.priority === 'Urgent' ? 'bg-red-100 text-red-800' :
+                      bug.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+                      bug.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {bug.priority}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-3 break-words">{bug.description}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium">Tester:</span>
+                    <span className="text-gray-900">{bug.tester_email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium">Status:</span>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded ${
+                      bug.status === 'Fixed' ? 'bg-green-100 text-green-800' :
+                      bug.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                      bug.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {bug.status || 'Open'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium">Assigned To:</span>
+                    <span className="text-gray-900">{bug.assigned_to_email || '-'}</span>
+                  </div>
+                  {bug.commit_link && (
+                    <div>
+                      <a
+                        href={bug.commit_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 break-all"
+                      >
+                        Commit Link
+                      </a>
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500">
+                    {new Date(bug.created_at).toLocaleString()}
+                  </div>
+                  <div className="pt-2 space-y-2">
+                    <div className="flex gap-2">
+                      {!bug.assigned_to ? (
+                        <button
+                          onClick={() => assignBug(bug.id)}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                        >
+                          Assign
+                        </button>
+                      ) : Number(bug.assigned_to) === Number(user?.id) ? (
+                        <button
+                          onClick={() => setModalBug(bug)}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                        >
+                          Update
+                        </button>
+                      ) : (
+                        <span className="flex-1 text-sm text-gray-600">Assigned</span>
+                      )}
+                      {canDeleteBug(bug) && (
+                        <button
+                          onClick={() => deleteBug(bug.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -328,10 +467,10 @@ function UpdateBugModal({ bug, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Update Bug Status</h3>
+        <div className="p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Update Bug Status</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -340,7 +479,7 @@ function UpdateBugModal({ bug, onClose, onSave }) {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
               >
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
@@ -357,20 +496,20 @@ function UpdateBugModal({ bug, onClose, onSave }) {
                 value={commitLink}
                 onChange={(e) => setCommitLink(e.target.value)}
                 placeholder="Enter commit link (optional)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
               />
             </div>
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm sm:text-base"
               >
                 Save
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base"
               >
                 Cancel
               </button>

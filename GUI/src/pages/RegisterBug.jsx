@@ -26,7 +26,7 @@ function RegisterBug() {
         })
         .catch(() => setProjects([]));
     }
-  }, [user]);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,14 +98,14 @@ function RegisterBug() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
+        <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-3xl font-bold text-center text-gray-900">Register Bug</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Register Bug</h2>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
                 {error}
               </div>
             )}
@@ -120,7 +120,7 @@ function RegisterBug() {
                   required
                   value={formData.id_project}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="">Select a project</option>
                   {projects.map(project => (
@@ -139,7 +139,7 @@ function RegisterBug() {
                   required
                   value={formData.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base resize-y"
                 />
               </div>
               <div>
@@ -152,7 +152,7 @@ function RegisterBug() {
                   required
                   value={formData.severity}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="">Select severity</option>
                   <option value="Low">Low</option>
@@ -171,7 +171,7 @@ function RegisterBug() {
                   required
                   value={formData.priority}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="">Select priority</option>
                   <option value="Low">Low</option>
@@ -190,7 +190,7 @@ function RegisterBug() {
                   type="text"
                   value={formData.commit_link}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 />
               </div>
             </div>

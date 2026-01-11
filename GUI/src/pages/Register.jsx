@@ -55,14 +55,14 @@ function Register() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
+        <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-3xl font-bold text-center text-gray-900">Register</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Register</h2>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
                 {error}
               </div>
             )}
@@ -78,7 +78,7 @@ function Register() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 />
               </div>
               <div>
@@ -92,7 +92,7 @@ function Register() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 />
               </div>
               <div>
@@ -104,7 +104,7 @@ function Register() {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="TST">Tester</option>
                   <option value="MP">Manager Proiect</option>
