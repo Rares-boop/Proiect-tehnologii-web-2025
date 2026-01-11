@@ -42,38 +42,44 @@ function Home() {
               <p className="text-gray-600">No projects yet.</p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map(project => (
-                  <div 
-                    key={project.id} 
-                    onClick={() => {
-                      if (user?.role === 'MP' && Number(project.created_by) === Number(user.id)) {
-                        navigate(`/view-bugs?project=${project.id}`);
-                      }
-                    }}
-                    className={`bg-white p-6 rounded-lg shadow-md ${
-                      user?.role === 'MP' && Number(project.created_by) === Number(user.id) 
-                        ? 'cursor-pointer hover:shadow-lg transition-shadow' 
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="text-xl font-bold text-gray-900">{project.nume}</h4>
-                      {project.is_tester === 1 && (
-                        <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">Tester</span>
+                {projects.map(project => {
+                  const isCreator = user?.role === 'MP' && Number(project.created_by) === Number(user.id);
+                  const isMember = user?.role === 'MP' && Number(project.is_member) === 1;
+                  const canViewBugs = isCreator || isMember;
+                  
+                  return (
+                    <div 
+                      key={project.id} 
+                      onClick={() => {
+                        if (canViewBugs) {
+                          navigate(`/view-bugs?project=${project.id}`);
+                        }
+                      }}
+                      className={`bg-white p-6 rounded-lg shadow-md ${
+                        canViewBugs 
+                          ? 'cursor-pointer hover:shadow-lg transition-shadow' 
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="text-xl font-bold text-gray-900">{project.nume}</h4>
+                        {project.is_tester === 1 && (
+                          <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">Tester</span>
+                        )}
+                      </div>
+                      {project.descriere && (
+                        <p className="text-gray-600 mb-2">{project.descriere}</p>
+                      )}
+                      {project.repository && (
+                        <p className="text-sm text-blue-600 mb-2">{project.repository}</p>
+                      )}
+                      <p className="text-sm text-gray-500">Created by: {project.creator_email}</p>
+                      {canViewBugs && (
+                        <p className="text-sm text-purple-600 mt-2 font-medium">Click to view bugs →</p>
                       )}
                     </div>
-                    {project.descriere && (
-                      <p className="text-gray-600 mb-2">{project.descriere}</p>
-                    )}
-                    {project.repository && (
-                      <p className="text-sm text-blue-600 mb-2">{project.repository}</p>
-                    )}
-                    <p className="text-sm text-gray-500">Created by: {project.creator_email}</p>
-                    {user?.role === 'MP' && Number(project.created_by) === Number(user.id) && (
-                      <p className="text-sm text-purple-600 mt-2 font-medium">Click to view bugs →</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

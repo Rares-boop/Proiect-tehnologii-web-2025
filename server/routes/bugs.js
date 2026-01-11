@@ -30,16 +30,30 @@ router.post('/', authenticateToken, requireTST, async (req, res) => {
             return res.status(400).json({ message: 'Description is required' });
         }
 
-        if (!severity || !severity.trim()) {
-            return res.status(400).json({ message: 'Severity is required' });
+        if (description.trim().length > 1000) {
+            return res.status(400).json({ message: 'Description must be less than 1000 characters' });
         }
 
-        if (!priority || !priority.trim()) {
-            return res.status(400).json({ message: 'Priority is required' });
+        const validSeverities = ['Low', 'Medium', 'High', 'Critical'];
+        if (!severity || !severity.trim() || !validSeverities.includes(severity.trim())) {
+            return res.status(400).json({ message: 'Severity must be one of: Low, Medium, High, Critical' });
         }
 
-        if (!id_project) {
-            return res.status(400).json({ message: 'Project ID is required' });
+        const validPriorities = ['Low', 'Medium', 'High', 'Urgent'];
+        if (!priority || !priority.trim() || !validPriorities.includes(priority.trim())) {
+            return res.status(400).json({ message: 'Priority must be one of: Low, Medium, High, Urgent' });
+        }
+
+        if (!id_project || isNaN(parseInt(id_project))) {
+            return res.status(400).json({ message: 'Valid project ID is required' });
+        }
+
+        if (commit_link && commit_link.trim()) {
+            try {
+                new URL(commit_link.trim());
+            } catch (e) {
+                return res.status(400).json({ message: 'Commit link must be a valid URL' });
+            }
         }
 
         const db = getDatabase();
@@ -80,8 +94,11 @@ router.post('/', authenticateToken, requireTST, async (req, res) => {
 
 router.post('/:id/assign', authenticateToken, requireMP, async (req, res) => {
     try {
-
         const bugId = parseInt(req.params.id);
+        if (isNaN(bugId)) {
+            return res.status(400).json({ message: 'Valid bug ID is required' });
+        }
+
         const db = getDatabase();
 
         const bug = await db.get(`
@@ -126,8 +143,11 @@ router.post('/:id/assign', authenticateToken, requireMP, async (req, res) => {
 
 router.put('/:id/status', authenticateToken, requireMP, async (req, res) => {
     try {
-
         const bugId = parseInt(req.params.id);
+        if (isNaN(bugId)) {
+            return res.status(400).json({ message: 'Valid bug ID is required' });
+        }
+
         const { status, commit_link } = req.body;
         const db = getDatabase();
 
@@ -146,8 +166,17 @@ router.put('/:id/status', authenticateToken, requireMP, async (req, res) => {
             return res.status(403).json({ message: 'You can only update bugs assigned to you' });
         }
 
-        if (!status || !status.trim()) {
-            return res.status(400).json({ message: 'Status is required' });
+        const validStatuses = ['Open', 'In Progress', 'Fixed', 'Closed'];
+        if (!status || !status.trim() || !validStatuses.includes(status.trim())) {
+            return res.status(400).json({ message: 'Status must be one of: Open, In Progress, Fixed, Closed' });
+        }
+
+        if (commit_link && commit_link.trim()) {
+            try {
+                new URL(commit_link.trim());
+            } catch (e) {
+                return res.status(400).json({ message: 'Commit link must be a valid URL' });
+            }
         }
 
         await db.run(

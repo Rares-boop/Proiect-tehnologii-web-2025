@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import Navbar from '../components/Navbar';
@@ -6,11 +6,32 @@ import Navbar from '../components/Navbar';
 function RegisterProject() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ nume: '', descriere: '', repository: '' });
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState([]);
   const [error, setError] = useState('');
+
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  useEffect(() => {
+    if (user && user.role === 'MP') {
+      api.get('/projects/users/mp')
+        .then(response => setTeamMembers(response.data))
+        .catch(() => setTeamMembers([]));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
+  };
+
+  const handleMemberToggle = (memberId) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId)
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
   };
 
   const validateForm = () => {
@@ -30,15 +51,12 @@ function RegisterProject() {
     }
 
     try {
-      await api.post('/projects', formData);
+      await api.post('/projects', { ...formData, team_members: selectedMembers });
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     }
   };
-
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
 
   if (!user || user.role !== 'MP') {
     return (
@@ -107,6 +125,31 @@ function RegisterProject() {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Echipă (opțional)
+                </label>
+                <div className="border border-gray-300 rounded-md max-h-40 overflow-y-auto p-2">
+                  {teamMembers.length === 0 ? (
+                    <p className="text-sm text-gray-500">Nu există alți membri MP disponibili</p>
+                  ) : (
+                    teamMembers.map(member => (
+                      <div key={member.id} className="flex items-center mb-2">
+                        <input
+                          type="checkbox"
+                          id={`member-${member.id}`}
+                          checked={selectedMembers.includes(member.id)}
+                          onChange={() => handleMemberToggle(member.id)}
+                          className="mr-2"
+                        />
+                        <label htmlFor={`member-${member.id}`} className="text-sm text-gray-700 cursor-pointer">
+                          {member.email}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
             <div>

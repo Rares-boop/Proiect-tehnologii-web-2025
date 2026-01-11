@@ -29,6 +29,16 @@ export async function initDatabase() {
             FOREIGN KEY (created_by) REFERENCES users(id)
         );
 
+        CREATE TABLE IF NOT EXISTS project_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(project_id, user_id)
+        );
+
         CREATE TABLE IF NOT EXISTS project_testers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id INTEGER NOT NULL,
@@ -64,6 +74,18 @@ export async function initDatabase() {
         await db.run('ALTER TABLE bugs ADD COLUMN status TEXT DEFAULT "Open"');
     } catch (err) {
     }
+
+    await db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_bugs_project ON bugs(id_project);
+        CREATE INDEX IF NOT EXISTS idx_bugs_tester ON bugs(id_tester);
+        CREATE INDEX IF NOT EXISTS idx_bugs_assigned ON bugs(assigned_to);
+        CREATE INDEX IF NOT EXISTS idx_bugs_status ON bugs(status);
+        CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects(created_by);
+        CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id);
+        CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id);
+        CREATE INDEX IF NOT EXISTS idx_project_testers_project ON project_testers(project_id);
+        CREATE INDEX IF NOT EXISTS idx_project_testers_user ON project_testers(user_id);
+    `);
 
     return db;
 }
