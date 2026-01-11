@@ -51,7 +51,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 6 characters long' });
         }
 
-        const validRole = role === 'MP' ? 'MP' : 'USER';
+        const validRole = role === 'MP' ? 'MP' : 'TST';
 
         const db = getDatabase();
         const existingUser = await db.get('SELECT * FROM users WHERE email = ?', [email]);

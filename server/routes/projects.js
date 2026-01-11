@@ -54,8 +54,8 @@ router.post('/:id/addTester', authenticateToken, async (req, res) => {
         const projectId = parseInt(req.params.id);
         const userId = req.user.id;
 
-        if (req.user.role === 'MP') {
-            return res.status(403).json({ message: 'Only students can become testers' });
+        if (req.user.role !== 'TST') {
+            return res.status(403).json({ message: 'Only TST users can become testers' });
         }
 
         const db = getDatabase();

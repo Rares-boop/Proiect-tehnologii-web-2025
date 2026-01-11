@@ -19,7 +19,14 @@ export const authenticateToken = (req, res, next) => {
 
 export const requireMP = (req, res, next) => {
     if (req.user.role !== 'MP') {
-        return res.status(403).json({ message: 'Only MP users can create projects' });
+        return res.status(403).json({ message: 'Only MP users can perform this action' });
+    }
+    next();
+};
+
+export const requireTST = (req, res, next) => {
+    if (req.user.role !== 'TST') {
+        return res.status(403).json({ message: 'Only TST users can perform this action' });
     }
     next();
 };

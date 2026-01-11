@@ -1,6 +1,6 @@
 import express from 'express';
 import { getDatabase } from '../db/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, requireTST, requireMP } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, requireTST, async (req, res) => {
     try {
         const { description, severity, priority, commit_link, id_project } = req.body;
 
@@ -78,11 +78,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/:id/assign', authenticateToken, async (req, res) => {
+router.post('/:id/assign', authenticateToken, requireMP, async (req, res) => {
     try {
-        if (req.user.role !== 'MP') {
-            return res.status(403).json({ message: 'Only MP users can assign bugs' });
-        }
 
         const bugId = parseInt(req.params.id);
         const db = getDatabase();
@@ -127,11 +124,8 @@ router.post('/:id/assign', authenticateToken, async (req, res) => {
     }
 });
 
-router.put('/:id/status', authenticateToken, async (req, res) => {
+router.put('/:id/status', authenticateToken, requireMP, async (req, res) => {
     try {
-        if (req.user.role !== 'MP') {
-            return res.status(403).json({ message: 'Only MP users can update bug status' });
-        }
 
         const bugId = parseInt(req.params.id);
         const { status, commit_link } = req.body;

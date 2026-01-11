@@ -17,7 +17,7 @@ function Home() {
         .then(response => setProjects(response.data))
         .catch(() => setProjects([]));
       
-      if (user.role === 'USER') {
+      if (user.role === 'TST') {
         api.get('/bugs')
           .then(response => setBugs(response.data))
           .catch(() => setBugs([]));
@@ -78,7 +78,7 @@ function Home() {
             )}
           </div>
         )}
-        {user && user.role === 'USER' && (
+        {user && user.role === 'TST' && (
           <div className="mt-12">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">My Reported Bugs</h3>
             {bugs.length === 0 ? (

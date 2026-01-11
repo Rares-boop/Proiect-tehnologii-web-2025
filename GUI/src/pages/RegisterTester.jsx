@@ -40,13 +40,13 @@ function RegisterTester() {
     }
   };
 
-  if (!user) {
+  if (!user || user.role !== 'TST') {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-red-600 text-center">Please login first</p>
+            <p className="text-red-600 text-center">{!user ? 'Please login first' : 'Only TST users can register as testers'}</p>
           </div>
         </div>
       </div>

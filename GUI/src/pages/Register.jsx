@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 
 function Register() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '', role: 'USER' });
+  const [formData, setFormData] = useState({ email: '', password: '', role: 'TST' });
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -106,7 +106,7 @@ function Register() {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="USER">Utilizator</option>
+                  <option value="TST">Tester</option>
                   <option value="MP">Manager Proiect</option>
                 </select>
               </div>

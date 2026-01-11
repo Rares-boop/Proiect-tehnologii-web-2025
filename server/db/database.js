@@ -15,7 +15,7 @@ export async function initDatabase() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'USER',
+            role TEXT NOT NULL DEFAULT 'TST',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 

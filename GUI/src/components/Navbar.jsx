@@ -41,7 +41,7 @@ function Navbar() {
                     </Link>
                   </>
                 )}
-                {user.role === 'USER' && (
+                {user.role === 'TST' && (
                   <>
                     <Link
                       to="/register-tester"
