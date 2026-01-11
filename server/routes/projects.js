@@ -304,6 +304,167 @@ router.get('/:id/bugs', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/:id/testers', authenticateToken, requireMP, async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'Valid project ID is required' });
+        }
+
+        const db = getDatabase();
+        const project = await db.get('SELECT created_by FROM projects WHERE id = ?', [projectId]);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        if (Number(project.created_by) !== Number(req.user.id)) {
+            return res.status(403).json({ message: 'You can only view testers of your own projects' });
+        }
+
+        const testers = await db.all(`
+            SELECT pt.user_id, u.email
+            FROM project_testers pt
+            JOIN users u ON pt.user_id = u.id
+            WHERE pt.project_id = ?
+            ORDER BY u.email
+        `, [projectId]);
+
+        res.json(testers);
+    } catch (error) {
+        console.error('Get project testers error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.delete('/:id/testers/me', authenticateToken, async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        const userId = req.user.id;
+
+        if (req.user.role !== 'TST') {
+            return res.status(403).json({ message: 'Only TST users can remove themselves as testers' });
+        }
+
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'Valid project ID is required' });
+        }
+
+        const db = getDatabase();
+        const project = await db.get('SELECT created_by FROM projects WHERE id = ?', [projectId]);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const tester = await db.get(
+            'SELECT id FROM project_testers WHERE project_id = ? AND user_id = ?',
+            [projectId, userId]
+        );
+        if (!tester) {
+            return res.status(404).json({ message: 'You are not a tester for this project' });
+        }
+
+        await db.run(
+            'DELETE FROM project_testers WHERE project_id = ? AND user_id = ?',
+            [projectId, userId]
+        );
+
+        res.json({ message: 'Successfully removed as tester' });
+    } catch (error) {
+        console.error('Remove self as tester error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.delete('/:id/testers/:userId', authenticateToken, requireMP, async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        const userId = parseInt(req.params.userId);
+
+        if (isNaN(projectId) || isNaN(userId)) {
+            return res.status(400).json({ message: 'Valid project ID and user ID are required' });
+        }
+
+        const db = getDatabase();
+        const project = await db.get('SELECT created_by FROM projects WHERE id = ?', [projectId]);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        if (Number(project.created_by) !== Number(req.user.id)) {
+            return res.status(403).json({ message: 'You can only remove testers from your own projects' });
+        }
+
+        const tester = await db.get(
+            'SELECT id FROM project_testers WHERE project_id = ? AND user_id = ?',
+            [projectId, userId]
+        );
+        if (!tester) {
+            return res.status(404).json({ message: 'Tester not found in this project' });
+        }
+
+        await db.run(
+            'DELETE FROM project_testers WHERE project_id = ? AND user_id = ?',
+            [projectId, userId]
+        );
+
+        res.json({ message: 'Tester removed successfully' });
+    } catch (error) {
+        console.error('Remove tester error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.put('/:id', authenticateToken, requireMP, async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'Valid project ID is required' });
+        }
+
+        const { nume, descriere, repository } = req.body;
+
+        if (!nume || !nume.trim()) {
+            return res.status(400).json({ message: 'Nume is required' });
+        }
+
+        if (nume.trim().length > 200) {
+            return res.status(400).json({ message: 'Project name must be less than 200 characters' });
+        }
+
+        if (descriere && descriere.trim().length > 1000) {
+            return res.status(400).json({ message: 'Description must be less than 1000 characters' });
+        }
+
+        if (repository && repository.trim()) {
+            try {
+                new URL(repository.trim());
+            } catch (e) {
+                return res.status(400).json({ message: 'Repository must be a valid URL' });
+            }
+        }
+
+        const db = getDatabase();
+        const project = await db.get('SELECT created_by FROM projects WHERE id = ?', [projectId]);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        if (Number(project.created_by) !== Number(req.user.id)) {
+            return res.status(403).json({ message: 'You can only edit your own projects' });
+        }
+
+        await db.run(
+            'UPDATE projects SET name = ?, description = ?, repository = ? WHERE id = ?',
+            [nume.trim(), descriere?.trim() || null, repository?.trim() || null, projectId]
+        );
+
+        res.json({ message: 'Project updated successfully' });
+    } catch (error) {
+        console.error('Update project error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 router.delete('/:id', authenticateToken, requireMP, async (req, res) => {
     try {
         const projectId = parseInt(req.params.id);

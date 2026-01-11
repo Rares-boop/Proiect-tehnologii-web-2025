@@ -146,12 +146,20 @@ function ViewBugs() {
             const selectedProject = projects.find(p => Number(p.id) === Number(filters.project));
             if (selectedProject && Number(selectedProject.created_by) === Number(user?.id)) {
               return (
-                <a
-                  href={`/manage-team?project=${filters.project}`}
-                  className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-purple-600 text-white rounded hover:bg-purple-700"
-                >
-                  Manage Team
-                </a>
+                <div className="flex gap-2">
+                  <a
+                    href={`/manage-team?project=${filters.project}`}
+                    className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-purple-600 text-white rounded hover:bg-purple-700"
+                  >
+                    Manage Team
+                  </a>
+                  <a
+                    href={`/manage-testers?project=${filters.project}`}
+                    className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Manage Testers
+                  </a>
+                </div>
               );
             }
             return null;

@@ -55,6 +55,22 @@ function Home() {
     }
   };
 
+  const handleRemoveTester = async (projectId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to stop being a tester for this project?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/projects/${projectId}/testers/me`);
+      api.get('/projects')
+        .then(response => setProjects(response.data))
+        .catch(() => setProjects([]));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to remove tester');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -62,6 +78,11 @@ function Home() {
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
           {user ? `Welcome back, ${user.email}!` : 'Welcome to Bug Bounty Application'}
         </h2>
+        {!user && (
+          <p className="text-gray-600 mb-6">
+            Login to get started
+          </p>
+        )}
         {user && (
           <div className="mt-6 sm:mt-8">
             <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Projects</h3>
@@ -89,12 +110,25 @@ function Home() {
                       }`}
                     >
                       {isCreator && (
-                        <button
-                          onClick={(e) => handleDeleteProject(project.id, e)}
-                          className="absolute top-2 right-2 w-6 h-6 bg-red-600 text-white rounded hover:bg-red-700 flex items-center justify-center text-sm font-bold"
-                        >
-                          ×
-                        </button>
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/edit-project?project=${project.id}`);
+                            }}
+                            className="w-6 h-6 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center text-xs"
+                            title="Edit"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteProject(project.id, e)}
+                            className="w-6 h-6 bg-red-600 text-white rounded hover:bg-red-700 flex items-center justify-center text-sm font-bold"
+                            title="Delete"
+                          >
+                            ×
+                          </button>
+                        </div>
                       )}
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h4 className="text-lg sm:text-xl font-bold text-gray-900">{project.nume}</h4>
@@ -109,6 +143,14 @@ function Home() {
                         <p className="text-xs sm:text-sm text-blue-600 mb-2 break-all">{project.repository}</p>
                       )}
                       <p className="text-xs sm:text-sm text-gray-500">Created by: {project.creator_email}</p>
+                      {project.is_tester === 1 && user?.role === 'TST' && (
+                        <button
+                          onClick={(e) => handleRemoveTester(project.id, e)}
+                          className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                        >
+                          Stop Being Tester
+                        </button>
+                      )}
                       {canViewBugs && (
                         <p className="text-xs sm:text-sm text-purple-600 mt-2 font-medium">Click to view bugs →</p>
                       )}

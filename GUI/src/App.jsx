@@ -7,6 +7,8 @@ import RegisterTester from './pages/RegisterTester';
 import RegisterBug from './pages/RegisterBug';
 import ViewBugs from './pages/ViewBugs';
 import ManageTeam from './pages/ManageTeam';
+import EditProject from './pages/EditProject';
+import ManageTesters from './pages/ManageTesters';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/register-bug" element={<RegisterBug />} />
         <Route path="/view-bugs" element={<ViewBugs />} />
         <Route path="/manage-team" element={<ManageTeam />} />
+        <Route path="/edit-project" element={<EditProject />} />
+        <Route path="/manage-testers" element={<ManageTesters />} />
       </Routes>
     </Router>
   );
