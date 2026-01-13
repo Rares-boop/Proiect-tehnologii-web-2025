@@ -49,11 +49,22 @@ router.post("/", authenticateToken, requireMP, async (req, res) => {
 
     if (repository && repository.trim()) {
       try {
-        new URL(repository.trim());
+        const url = new URL(repository.trim());
+        if (url.hostname !== "github.com") {
+          return res.status(400).json({ message: "Repository must be a GitHub URL" });
+        }
+        const path = url.pathname.slice(1).replace(/\.git$/, "");
+        const response = await fetch(`https://api.github.com/repos/${path}`, {
+          headers: { "Accept": "application/vnd.github.v3+json" }
+        });
+        if (!response.ok) {
+          return res.status(400).json({ message: "Repository not found" });
+        }
       } catch (e) {
-        return res
-          .status(400)
-          .json({ message: "Repository must be a valid URL" });
+        if (e instanceof TypeError) {
+          return res.status(400).json({ message: "Repository must be a valid URL" });
+        }
+        return res.status(400).json({ message: "Repository not found" });
       }
     }
 
@@ -90,7 +101,7 @@ router.post("/", authenticateToken, requireMP, async (req, res) => {
               "INSERT INTO project_members (project_id, user_id) VALUES (?, ?)",
               [projectId, memberId]
             );
-          } catch (err) {}
+          } catch (err) { }
         }
       }
     }
