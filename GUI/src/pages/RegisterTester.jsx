@@ -1,22 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
-import Navbar from '../components/Navbar';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
 
 function RegisterTester() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
-  const [projectId, setProjectId] = useState('');
-  const [error, setError] = useState('');
+  const [projectId, setProjectId] = useState("");
+  const [error, setError] = useState("");
 
-  const userStr = localStorage.getItem('user');
+  const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
 
   useEffect(() => {
     if (user) {
-      api.get('/projects')
-        .then(response => {
-          const availableProjects = response.data.filter(project => !project.is_tester && project.created_by !== user.id);
+      api
+        .get("/projects")
+        .then((response) => {
+          const availableProjects = response.data.filter(
+            (project) => !project.is_tester && project.created_by !== user.id
+          );
           setProjects(availableProjects);
         })
         .catch(() => setProjects([]));
@@ -25,28 +28,32 @@ function RegisterTester() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!projectId) {
-      setError('Please select a project');
+      setError("Please select a project");
       return;
     }
 
     try {
       await api.post(`/projects/${projectId}/addTester`);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
-  if (!user || user.role !== 'TST') {
+  if (!user || user.role !== "TST") {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-red-600 text-center">{!user ? 'Please login first' : 'Only TST users can register as testers'}</p>
+            <p className="text-red-600 text-center">
+              {!user
+                ? "Please login first"
+                : "Only TST users can register as testers"}
+            </p>
           </div>
         </div>
       </div>
@@ -59,7 +66,9 @@ function RegisterTester() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Register as Tester</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
+              Register as Tester
+            </h2>
           </div>
           <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -69,7 +78,10 @@ function RegisterTester() {
             )}
             <div className="space-y-4">
               <div>
-                <label htmlFor="projectId" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="projectId"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Select Project
                 </label>
                 <select
@@ -79,12 +91,12 @@ function RegisterTester() {
                   value={projectId}
                   onChange={(e) => {
                     setProjectId(e.target.value);
-                    setError('');
+                    setError("");
                   }}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="">Choose a project...</option>
-                  {projects.map(project => (
+                  {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.nume}
                     </option>

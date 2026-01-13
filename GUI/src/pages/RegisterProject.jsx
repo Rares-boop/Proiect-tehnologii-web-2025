@@ -1,42 +1,47 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
-import Navbar from '../components/Navbar';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
 
 function RegisterProject() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ nume: '', descriere: '', repository: '' });
+  const [formData, setFormData] = useState({
+    nume: "",
+    descriere: "",
+    repository: "",
+  });
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const userStr = localStorage.getItem('user');
+  const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
 
   useEffect(() => {
-    if (user && user.role === 'MP') {
-      api.get('/projects/users/mp')
-        .then(response => setTeamMembers(response.data))
+    if (user && user.role === "MP") {
+      api
+        .get("/projects/users/mp")
+        .then((response) => setTeamMembers(response.data))
         .catch(() => setTeamMembers([]));
     }
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const handleMemberToggle = (memberId) => {
-    setSelectedMembers(prev => 
+    setSelectedMembers((prev) =>
       prev.includes(memberId)
-        ? prev.filter(id => id !== memberId)
+        ? prev.filter((id) => id !== memberId)
         : [...prev, memberId]
     );
   };
 
   const validateForm = () => {
     if (!formData.nume.trim()) {
-      setError('Nume is required');
+      setError("Nume is required");
       return false;
     }
     return true;
@@ -44,27 +49,32 @@ function RegisterProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!validateForm()) {
       return;
     }
 
     try {
-      await api.post('/projects', { ...formData, team_members: selectedMembers });
-      navigate('/');
+      await api.post("/projects", {
+        ...formData,
+        team_members: selectedMembers,
+      });
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
-  if (!user || user.role !== 'MP') {
+  if (!user || user.role !== "MP") {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-red-600 text-center">Only MP users can create projects</p>
+            <p className="text-red-600 text-center">
+              Only MP users can create projects
+            </p>
           </div>
         </div>
       </div>
@@ -77,7 +87,9 @@ function RegisterProject() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Register Project</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
+              Register Project
+            </h2>
           </div>
           <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -87,7 +99,10 @@ function RegisterProject() {
             )}
             <div className="space-y-4">
               <div>
-                <label htmlFor="nume" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="nume"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Nume
                 </label>
                 <input
@@ -101,7 +116,10 @@ function RegisterProject() {
                 />
               </div>
               <div>
-                <label htmlFor="descriere" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="descriere"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Descriere
                 </label>
                 <textarea
@@ -114,7 +132,10 @@ function RegisterProject() {
                 />
               </div>
               <div>
-                <label htmlFor="repository" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="repository"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Repository
                 </label>
                 <input
@@ -132,9 +153,11 @@ function RegisterProject() {
                 </label>
                 <div className="border border-gray-300 rounded-md max-h-40 overflow-y-auto p-2">
                   {teamMembers.length === 0 ? (
-                    <p className="text-sm text-gray-500">Nu există alți membri MP disponibili</p>
+                    <p className="text-sm text-gray-500">
+                      Nu există alți membri MP disponibili
+                    </p>
                   ) : (
-                    teamMembers.map(member => (
+                    teamMembers.map((member) => (
                       <div key={member.id} className="flex items-center mb-2">
                         <input
                           type="checkbox"
@@ -143,7 +166,10 @@ function RegisterProject() {
                           onChange={() => handleMemberToggle(member.id)}
                           className="mr-2"
                         />
-                        <label htmlFor={`member-${member.id}`} className="text-sm text-gray-700 cursor-pointer break-words">
+                        <label
+                          htmlFor={`member-${member.id}`}
+                          className="text-sm text-gray-700 cursor-pointer break-words"
+                        >
                           {member.email}
                         </label>
                       </div>

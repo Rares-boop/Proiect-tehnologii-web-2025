@@ -1,14 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import RegisterProject from './pages/RegisterProject';
-import RegisterTester from './pages/RegisterTester';
-import RegisterBug from './pages/RegisterBug';
-import ViewBugs from './pages/ViewBugs';
-import ManageTeam from './pages/ManageTeam';
-import EditProject from './pages/EditProject';
-import ManageTesters from './pages/ManageTesters';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import RegisterProject from "./pages/RegisterProject";
+import RegisterTester from "./pages/RegisterTester";
+import RegisterBug from "./pages/RegisterBug";
+import ViewBugs from "./pages/ViewBugs";
+import ManageTeam from "./pages/ManageTeam";
+import EditProject from "./pages/EditProject";
+import ManageTesters from "./pages/ManageTesters";
 
 function App() {
   return (

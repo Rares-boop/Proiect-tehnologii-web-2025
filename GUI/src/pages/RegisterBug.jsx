@@ -1,27 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
-import Navbar from '../components/Navbar';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
 
 function RegisterBug() {
   const navigate = useNavigate();
-  const userStr = localStorage.getItem('user');
+  const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
   const [projects, setProjects] = useState([]);
-  const [formData, setFormData] = useState({ 
-    id_project: '', 
-    description: '', 
-    severity: '', 
-    priority: '', 
-    commit_link: '' 
+  const [formData, setFormData] = useState({
+    id_project: "",
+    description: "",
+    severity: "",
+    priority: "",
+    commit_link: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
-      api.get('/projects')
-        .then(response => {
-          const testerProjects = response.data.filter(project => project.is_tester === 1);
+      api
+        .get("/projects")
+        .then((response) => {
+          const testerProjects = response.data.filter(
+            (project) => project.is_tester === 1
+          );
           setProjects(testerProjects);
         })
         .catch(() => setProjects([]));
@@ -30,24 +33,24 @@ function RegisterBug() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const validateForm = () => {
     if (!formData.id_project) {
-      setError('Project is required');
+      setError("Project is required");
       return false;
     }
     if (!formData.description.trim()) {
-      setError('Description is required');
+      setError("Description is required");
       return false;
     }
     if (!formData.severity) {
-      setError('Severity is required');
+      setError("Severity is required");
       return false;
     }
     if (!formData.priority) {
-      setError('Priority is required');
+      setError("Priority is required");
       return false;
     }
     return true;
@@ -55,27 +58,31 @@ function RegisterBug() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!validateForm()) {
       return;
     }
 
     try {
-      await api.post('/bugs', formData);
-      navigate('/');
+      await api.post("/bugs", formData);
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
-  if (!user || user.role !== 'TST') {
+  if (!user || user.role !== "TST") {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-red-600 text-center">{!user ? 'Please login first' : 'Only TST users can register bugs'}</p>
+            <p className="text-red-600 text-center">
+              {!user
+                ? "Please login first"
+                : "Only TST users can register bugs"}
+            </p>
           </div>
         </div>
       </div>
@@ -88,7 +95,9 @@ function RegisterBug() {
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-gray-600 text-center">You need to be a tester for at least one project to register bugs</p>
+            <p className="text-gray-600 text-center">
+              You need to be a tester for at least one project to register bugs
+            </p>
           </div>
         </div>
       </div>
@@ -101,7 +110,9 @@ function RegisterBug() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Register Bug</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
+              Register Bug
+            </h2>
           </div>
           <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -111,7 +122,10 @@ function RegisterBug() {
             )}
             <div className="space-y-4">
               <div>
-                <label htmlFor="id_project" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="id_project"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Project
                 </label>
                 <select
@@ -123,13 +137,18 @@ function RegisterBug() {
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base"
                 >
                   <option value="">Select a project</option>
-                  {projects.map(project => (
-                    <option key={project.id} value={project.id}>{project.nume}</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.nume}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Description
                 </label>
                 <textarea
@@ -143,7 +162,10 @@ function RegisterBug() {
                 />
               </div>
               <div>
-                <label htmlFor="severity" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="severity"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Severity
                 </label>
                 <select
@@ -162,7 +184,10 @@ function RegisterBug() {
                 </select>
               </div>
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="priority"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Priority
                 </label>
                 <select
@@ -181,7 +206,10 @@ function RegisterBug() {
                 </select>
               </div>
               <div>
-                <label htmlFor="commit_link" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="commit_link"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Commit Link
                 </label>
                 <input

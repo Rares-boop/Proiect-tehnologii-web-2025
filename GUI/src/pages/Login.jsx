@@ -1,29 +1,29 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import api from '../utils/api';
-import Navbar from '../components/Navbar';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
 
 function Login() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return false;
     }
-    if (!formData.email.includes('@')) {
-      setError('Invalid email format');
+    if (!formData.email.includes("@")) {
+      setError("Invalid email format");
       return false;
     }
     if (!formData.password) {
-      setError('Password is required');
+      setError("Password is required");
       return false;
     }
     return true;
@@ -31,20 +31,20 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!validateForm()) {
       return;
     }
 
     try {
-      const response = await api.post('/login', formData);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/');
+      const response = await api.post("/login", formData);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate("/");
       window.location.reload();
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
@@ -54,7 +54,9 @@ function Login() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Login</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
+              Login
+            </h2>
           </div>
           <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -64,7 +66,10 @@ function Login() {
             )}
             <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email
                 </label>
                 <input
@@ -78,7 +83,10 @@ function Login() {
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Password
                 </label>
                 <input
@@ -101,7 +109,10 @@ function Login() {
               </button>
             </div>
             <div className="text-center">
-              <Link to="/register" className="text-sm text-blue-600 hover:text-blue-800">
+              <Link
+                to="/register"
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
                 Don't have an account? Register
               </Link>
             </div>

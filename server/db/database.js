@@ -1,16 +1,16 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import 'dotenv/config';
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
+import "dotenv/config";
 
 let db = null;
 
 export async function initDatabase() {
-    db = await open({
-        filename: process.env.DB_PATH,
-        driver: sqlite3.Database
-    });
+  db = await open({
+    filename: process.env.DB_PATH,
+    driver: sqlite3.Database,
+  });
 
-    await db.exec(`
+  await db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
@@ -65,17 +65,15 @@ export async function initDatabase() {
         );
     `);
 
-    try {
-        await db.run('ALTER TABLE bugs ADD COLUMN assigned_to INTEGER');
-    } catch (err) {
-    }
+  try {
+    await db.run("ALTER TABLE bugs ADD COLUMN assigned_to INTEGER");
+  } catch (err) {}
 
-    try {
-        await db.run('ALTER TABLE bugs ADD COLUMN status TEXT DEFAULT "Open"');
-    } catch (err) {
-    }
+  try {
+    await db.run('ALTER TABLE bugs ADD COLUMN status TEXT DEFAULT "Open"');
+  } catch (err) {}
 
-    await db.exec(`
+  await db.exec(`
         CREATE INDEX IF NOT EXISTS idx_bugs_project ON bugs(id_project);
         CREATE INDEX IF NOT EXISTS idx_bugs_tester ON bugs(id_tester);
         CREATE INDEX IF NOT EXISTS idx_bugs_assigned ON bugs(assigned_to);
@@ -87,13 +85,12 @@ export async function initDatabase() {
         CREATE INDEX IF NOT EXISTS idx_project_testers_user ON project_testers(user_id);
     `);
 
-    return db;
+  return db;
 }
 
 export function getDatabase() {
-    if (!db) {
-        throw new Error('Database not initialized. Call initDatabase() first.');
-    }
-    return db;
+  if (!db) {
+    throw new Error("Database not initialized. Call initDatabase() first.");
+  }
+  return db;
 }
-

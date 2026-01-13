@@ -1,40 +1,46 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../utils/api';
-import Navbar from '../components/Navbar';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
 
 function EditProject() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const projectId = searchParams.get('project');
-  const [formData, setFormData] = useState({ nume: '', descriere: '', repository: '' });
-  const [error, setError] = useState('');
+  const projectId = searchParams.get("project");
+  const [formData, setFormData] = useState({
+    nume: "",
+    descriere: "",
+    repository: "",
+  });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const userStr = localStorage.getItem('user');
+  const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
 
   useEffect(() => {
-    if (!user || user.role !== 'MP' || !projectId) {
+    if (!user || user.role !== "MP" || !projectId) {
       setLoading(false);
       return;
     }
 
     const fetchProject = async () => {
       try {
-        const response = await api.get('/projects');
-        const project = response.data.find(p => Number(p.id) === Number(projectId));
+        const response = await api.get("/projects");
+        const project = response.data.find(
+          (p) => Number(p.id) === Number(projectId)
+        );
         if (project && Number(project.created_by) === Number(user.id)) {
           setFormData({
-            nume: project.nume || '',
-            descriere: project.descriere || '',
-            repository: project.repository || ''
+            nume: project.nume || "",
+            descriere: project.descriere || "",
+            repository: project.repository || "",
           });
         } else {
-          setError('Project not found or you do not have permission');
+          setError("Project not found or you do not have permission");
         }
       } catch (err) {
-        setError('Failed to load project');
+        setError("Failed to load project");
       } finally {
         setLoading(false);
       }
@@ -45,33 +51,35 @@ function EditProject() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!formData.nume.trim()) {
-      setError('Nume is required');
+      setError("Nume is required");
       return;
     }
 
     try {
       await api.put(`/projects/${projectId}`, formData);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || 'Update failed');
+      setError(err.response?.data?.message || "Update failed");
     }
   };
 
-  if (!user || user.role !== 'MP') {
+  if (!user || user.role !== "MP") {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-            <p className="text-red-600 text-center">Only MP users can edit projects</p>
+            <p className="text-red-600 text-center">
+              Only MP users can edit projects
+            </p>
           </div>
         </div>
       </div>
@@ -108,7 +116,9 @@ function EditProject() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
         <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8 bg-white rounded-lg shadow-md">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">Edit Project</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900">
+              Edit Project
+            </h2>
           </div>
           <form className="mt-6 sm:mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -118,7 +128,10 @@ function EditProject() {
             )}
             <div className="space-y-4">
               <div>
-                <label htmlFor="nume" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="nume"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Nume
                 </label>
                 <input
@@ -132,7 +145,10 @@ function EditProject() {
                 />
               </div>
               <div>
-                <label htmlFor="descriere" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="descriere"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Descriere
                 </label>
                 <textarea
@@ -145,7 +161,10 @@ function EditProject() {
                 />
               </div>
               <div>
-                <label htmlFor="repository" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="repository"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Repository
                 </label>
                 <input
