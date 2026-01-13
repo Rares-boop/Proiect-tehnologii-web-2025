@@ -1,9 +1,0 @@
-{
-  "name": "proiect-tehnologii-web-2025",
-  "private": true,
-  "workspaces": ["server", "GUI"],
-  "scripts": {
-    "build": "npm -w GUI ci && npm -w GUI run build && npm -w server run build || true",
-    "start": "npm -w server start"
-  }
-}
