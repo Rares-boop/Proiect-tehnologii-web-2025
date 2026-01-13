@@ -1,0 +1,8 @@
+{
+  "name": "proiect-tehnologii-web-2025",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix GUI ci && npm --prefix GUI run build && npm --prefix server ci",
+    "start": "npm --prefix server start"
+  }
+}
